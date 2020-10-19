@@ -1,4 +1,7 @@
 import hashlib
+import random
+from base import engine_hash, Hash_Base, reset_db
+from base_hash import *
 
 def check_password(passwd):
     val = True
@@ -20,12 +23,66 @@ def check_password(passwd):
 
     return val
 
+
+insert = {}
+
 print('Introduce su nombre de usuario')
 username = input()
-print('Introduce la contraseña que desea almacenar')
-password = input()
-if check_password(password):
-    h = hashlib.sha512(password.encode('utf-8')).hexdigest()
-    print(h)
+insert["Name"] = username
+
+print('Desea almacenar una contraseña (1) o generarla en base a unas palabras que conozca (2)')
+opcion = input()
+if opcion == "1":
+    print('Escriba la contraseña')
+    password = input()
+    if check_password(password):
+        insert["Password"] = password
+        h = hashlib.sha512(password.encode('utf-8')).hexdigest()
+        insert["Hashed_Passw"] = h
+        print(password)
+if opcion == "2":
+    print('¿Cuantas palabras quiere poner?')
+    n = input()
+    palabras = []
+    for i in range(int(n)):
+        print('Palabra número ' + str(n))
+        palabra = input()
+        palabras.append(palabra)
+    random.shuffle(palabras)
+    res = ''.join(palabras)
+    res = res + str(random.randint(1, 101))
+
+    if check_password(res):
+        insert["Password"] = res
+        h = hashlib.sha512(res.encode('utf-8')).hexdigest()
+        insert["Hashed_Passw"] = h
+        print(res)
+
+print("¿Está seguro de guardar esta contraseña? (0, 1) ")
+decision = input()
+
+if decision == "1":
+
+    # Establishing a connection to the database
+    connection = engine_hash.connect()
+
+    try:
+
+        ins = NamePassw.insert()
+        connection.execute(ins, insert)
+
+    except ValueError as vx:
+        print(vx)
+
+    except Exception as ex:
+        print(ex)
+
+    else:
+        print("Inserted Name: " + insert["Name"] + " with Password: " + insert["Password"] +
+              " and Hashed Password (sha512): " + insert["Hashed_Passw"])
+    finally:
+        # Close connection after insert
+        connection.close()
+
 else:
-    print('Contraseña no válida')
+    print("Proceso abortado")
