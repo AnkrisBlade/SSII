@@ -1,13 +1,11 @@
-from sqlalchemy import Column, String, Integer, ForeignKey, DateTime, Float, func, type_coerce, TypeDecorator
+from sqlalchemy import Column, String, DateTime, func
 from sqlalchemy import create_engine, MetaData
 from sqlalchemy.ext.declarative import declarative_base
 
 engine_example = 'mysql+pymysql://root:BIGDATA@127.0.0.1/hash'
 engine_hash = create_engine(engine_example)
 
-# API Base
-Base = declarative_base()
-# Staging Base
+# Definimos la Base y el schema al que está asociado
 Hash_Base = declarative_base(metadata=MetaData(schema='hash'))
 
 
