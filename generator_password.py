@@ -1,6 +1,5 @@
 import hashlib
 import random
-from base import engine_hash, Hash_Base, reset_db
 from base_hash import *
 from sqlalchemy.sql import insert
 from string import punctuation
