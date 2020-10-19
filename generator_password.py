@@ -3,6 +3,7 @@ import random
 from base import engine_hash, Hash_Base, reset_db
 from base_hash import *
 from sqlalchemy.sql import insert
+from string import punctuation
 
 
 def check_password(passwd):
@@ -21,6 +22,10 @@ def check_password(passwd):
 
     if not any(char.islower() for char in passwd):
         print('La contraseña deber tener al menos un caracter en minúscula')
+        val = False
+
+    if not any(char in punctuation for char in passwd):
+        print('La contraseña debe contener un caracter especial')
         val = False
 
     return val
@@ -53,6 +58,7 @@ if opcion == "2":
     random.shuffle(palabras)
     res = ''.join(palabras)
     res = res + str(random.randint(1, 101))
+    res = res + random.choice(punctuation)
 
     if check_password(res):
         data["Password"] = res
