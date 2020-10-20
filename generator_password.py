@@ -31,24 +31,31 @@ def check_password(passwd):
 
 
 data = {}
+print('¿Si desea resetear la base de datos o la inicia por primera vez pulse (1), si no pulse (0)?')
+start = input()
+if start == str(1):
+    Hash_Base.metadata.drop_all(engine_hash)
+    Hash_Base.metadata.create_all(engine_hash)
+    print("Base de datos reseteada")
+
 
 print('Introduce su nombre de usuario')
 username = input()
 data["Name"] = username
 
-print('Desea almacenar una contraseña (1) o generarla en base a unas palabras que conozca (2)')
+print('Desea almacenar una contraseña (0) o generarla en base a unas palabras que conozca (1)')
 opcion = input()
 
-if opcion == "1":
+if opcion == "0":
     print('Escriba la contraseña')
     password = input()
     if check_password(password):
         data["Password"] = password
         h = hashlib.sha512(password.encode('utf-8')).hexdigest()
         data["Hashed_Passw"] = h
-        print(password)
+        print("La contraseña es: " + password)
 
-if opcion == "2":
+if opcion == "1":
     print('¿Cuantas palabras quiere poner?')
     n = input()
     palabras = []
@@ -65,7 +72,7 @@ if opcion == "2":
         data["Password"] = res
         h = hashlib.sha512(res.encode('utf-8')).hexdigest()
         data["Hashed_Passw"] = h
-        print(res)
+        print("La contraseña es: " + res)
 
 print("¿Está seguro de guardar esta contraseña? (0, 1) ")
 decision = input()
