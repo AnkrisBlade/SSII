@@ -38,6 +38,7 @@ data["Name"] = username
 
 print('Desea almacenar una contraseña (1) o generarla en base a unas palabras que conozca (2)')
 opcion = input()
+
 if opcion == "1":
     print('Escriba la contraseña')
     password = input()
@@ -46,6 +47,7 @@ if opcion == "1":
         h = hashlib.sha512(password.encode('utf-8')).hexdigest()
         data["Hashed_Passw"] = h
         print(password)
+
 if opcion == "2":
     print('¿Cuantas palabras quiere poner?')
     n = input()
