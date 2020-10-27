@@ -31,7 +31,7 @@ def main():
     intervalo = 3600
     log_path = "hids.log"
     db_path = "hids.csv"
-    
+
     config = configparser.ConfigParser()
     if get_config_file == None:
         print("No se encontró ningún archivo de configuracion")
@@ -41,19 +41,28 @@ def main():
     intervalo = int(config.get("General","intervalo"))
     log_path = config.get("General","log")
     db_path = config.get("General","database")
+    pass_hash = config.get("General","pass_sha1")
     
     #inicializar log
     log_format = "[%(levelname)s] %(asctime)s : %(message)s"
     logging.basicConfig(level=logging.DEBUG,filename=log_path,format = log_format)
     
     hashes = read_database(db_path)
+   
+    print("Introduzca la contraseña de administrador:")
+    contra_hash = hashlib.sha1(input()).hexdigest()
     
+    if contra_hash != pass_hash:
+        print("Contraseña erronea")
+        exit()
+
     #Bucle principal, ejecutar cada x tiempo
     while True:
         print("Comprobando Integridad")
         
         for ruta,hash in hashes:
-            new_hash = hashlib.sha1(open(ruta).read().encode()).hexdigest()
+            file_hash = hashlib.sha1(open(ruta).read().encode()).hexdigest()
+            new_hash = hashlib.sha1(file_hash + contra_hash).hexdigest()
             if new_hash != hash:
                 msg = "===# ARCHIVO CORRUPTO! #===\n" + \
                         "Ruta: " + ruta + "\n" \
