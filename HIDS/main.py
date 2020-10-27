@@ -41,17 +41,18 @@ def main():
     
     try:
         intervalo = int(config.get("General","intervalo"))
+    except Exception as e:
+        print(e)
+        
+    try:
         log_path = config.get("General","log")
+    except Exception as e:
+        print(e)
+        
+    try:    
         db_path = config.get("General","database")
     except Exception as e:
         print(e)    
-    
-    try:
-        pass_hash = config.get("General","pass_sha1")
-    except:
-        print("Contraseña no encontrada")
-        exit(-1)
-        
     
     #inicializar log
     log_format = "[%(levelname)s] %(asctime)s : %(message)s"
@@ -59,14 +60,32 @@ def main():
     
     hashes = read_database(db_path)
    
-    print("Introduzca la contraseña de administrador:")
+    contra_raw = ""
+    try:
+        with open(".shadow","r") as pass_fd:
+            contra_hash = pass_fd.read()
+            
+        print("Introduzca la contraseña de administrador:")
     
-    contra_raw = getpass()
-    contra_hash = hashlib.sha1(contra_raw.encode()).hexdigest()
-    
-    if contra_hash != pass_hash:
-        print("Contraseña erronea")
-        exit()
+        contra_raw = getpass()
+        pass_hash = hashlib.sha1(contra_raw.encode()).hexdigest()
+        
+        if contra_hash != pass_hash:
+            print("Contraseña erronea")
+            exit(-1)
+            
+    except:
+        print("No existe una contraseña almacena o no se puede acceder a ella")
+        contra_raw = getpass("Por favor inserte una contraseña:")
+        contra_hash = hashlib.sha1(contra_raw.encode()).hexdigest()
+        
+        try:
+            with open(".shadow","x") as pass_fd:
+                pass_fd.write(contra_hash)
+        except Exception as e:
+            print(e)
+            print("Fallo al crear la contraseña")
+            exit(-1)
         
     logging.info("Arrancando monitor")
 
@@ -78,7 +97,7 @@ def main():
             try:
                 file_hash = hashlib.sha1(open(ruta).read().encode()).hexdigest()
             except FileNotFoundError as e:
-                msg = "===# FICHERO BORRADO #===\n" \
+                msg = "===# FICHERO BORRADO! #===\n" \
                         "Ruta: " + ruta
                 print(msg)
                 logging.error("Fallo en:(" + ruta + ") El fichero no se encuntra")
