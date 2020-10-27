@@ -5,6 +5,7 @@ import os
 import logging
 import configparser
 import os.path
+from getpass import getpass
 from tkinter import messagebox
 
 '''
@@ -50,7 +51,7 @@ def main():
     hashes = read_database(db_path)
    
     print("Introduzca la contraseña de administrador:")
-    contra_hash = hashlib.sha1(input()).hexdigest()
+    contra_hash = hashlib.sha1(getpass())).hexdigest()
     
     if contra_hash != pass_hash:
         print("Contraseña erronea")
