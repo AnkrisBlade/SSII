@@ -39,10 +39,19 @@ def main():
         
     config.read("hids.ini")
     
-    intervalo = int(config.get("General","intervalo"))
-    log_path = config.get("General","log")
-    db_path = config.get("General","database")
-    pass_hash = config.get("General","pass_sha1")
+    try:
+        intervalo = int(config.get("General","intervalo"))
+        log_path = config.get("General","log")
+        db_path = config.get("General","database")
+    except Exception as e:
+        print(e)    
+    
+    try:
+        pass_hash = config.get("General","pass_sha1")
+    except:
+        print("Contraseña no encontrada")
+        exit(-1)
+        
     
     #inicializar log
     log_format = "[%(levelname)s] %(asctime)s : %(message)s"
@@ -51,21 +60,34 @@ def main():
     hashes = read_database(db_path)
    
     print("Introduzca la contraseña de administrador:")
-    contra_hash = hashlib.sha1(getpass())).hexdigest()
+    
+    contra_raw = getpass()
+    contra_hash = hashlib.sha1(contra_raw.encode()).hexdigest()
     
     if contra_hash != pass_hash:
         print("Contraseña erronea")
         exit()
+        
+    logging.info("Arrancando monitor")
 
     #Bucle principal, ejecutar cada x tiempo
     while True:
         print("Comprobando Integridad")
         
         for ruta,hash in hashes:
-            file_hash = hashlib.sha1(open(ruta).read().encode()).hexdigest()
-            new_hash = hashlib.sha1(file_hash + contra_hash).hexdigest()
+            try:
+                file_hash = hashlib.sha1(open(ruta).read().encode()).hexdigest()
+            except FileNotFoundError as e:
+                msg = "===# FICHERO BORRADO #===\n" \
+                        "Ruta: " + ruta
+                print(msg)
+                logging.error("Fallo en:(" + ruta + ") El fichero no se encuntra")
+                
+                continue
+	
+            new_hash = hashlib.sha1((file_hash + contra_raw).encode()).hexdigest()
             if new_hash != hash:
-                msg = "===# ARCHIVO CORRUPTO! #===\n" + \
+                msg = "===# FICHERO CORRUPTO! #===\n" + \
                         "Ruta: " + ruta + "\n" \
                         "SHA1 Original:\t" + hash + "\n" \
                         "SHA1 Actual:\t" + new_hash 
