@@ -26,12 +26,12 @@ def get_config_file():
             return path
         
     return None
-            
 
 def main():
     intervalo = 3600
     log_path = "hids.log"
     db_path = "hids.csv"
+    hash_func = hashlib.sha1
 
     config = configparser.ConfigParser()
     if get_config_file == None:
@@ -52,7 +52,21 @@ def main():
     try:    
         db_path = config.get("General","database")
     except Exception as e:
-        print(e)    
+        print(e)
+        
+    try:    
+        metodo_integridad = config.get("General","metodo_integridad")
+        if metodo_integridad == "sha1":
+            hash_func = hashlib.sha1
+        elif metodo_integridad == "sha512":
+            hash_func = hashlib.sha512
+        elif metodo_integridad == "md5":
+            hash_func = hashlib.md5
+        elif metodo_integridad == "sha256":
+            hash_func = hashlib.sha256
+            
+    except Exception as e:
+        print("No se ha definido un metodo de comprobacion de integridad, usando sha1")        
     
     #inicializar log
     log_format = "[%(levelname)s] %(asctime)s : %(message)s"
@@ -100,7 +114,7 @@ def main():
         for ruta,hash in hashes:
             
             try:
-                file_hash = hashlib.sha1(open(ruta).read().encode()).hexdigest()
+                file_hash = hash_func(open(ruta).read().encode()).hexdigest()
             except FileNotFoundError as e:
                 msg = "===# FICHERO NO ENCONTRADO! #===\n" \
                         "Ruta: " + ruta
@@ -109,7 +123,7 @@ def main():
                 ficheros_no_encontrados = ficheros_no_encontrados + 1
                 continue
 	
-            new_hash = hashlib.sha1((file_hash + contra_raw).encode()).hexdigest()
+            new_hash = hash_func((file_hash + contra_raw).encode()).hexdigest()
             if new_hash != hash:
                 msg = "===# FICHERO CORRUPTO! #===\n" + \
                         "Ruta: " + ruta + "\n" \
