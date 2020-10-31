@@ -7,20 +7,6 @@ import getpass
 import configparser
 
 
-# Returns list with all files inside that path
-'''def filepaths(archivo_path):
-    path = csv.reader(archivo_path, delimiter=',')
-    paths = []
-    for i in path:
-        for subdir, _, files in os.walk(i):
-            for file in files:
-                paths.append(os.path.join(subdir, file))
-        return paths
-
-#paths = filepaths(r"D:\Fork\SSII\Password_Generator")
-
-#dir = os.path.dirname(paths[0]).split("\\")[-1]'''
-
 def get_config_file():
     defaults_paths = ["/etc/hids/config.ini","./config.ini","./hids.ini","./hids.conf"]
     
@@ -127,7 +113,6 @@ genfile("hids_test.csv", paths, "test")
 """
 
 
-
 print("Introduzca la contraseña de administador para generar los hashes")
 pass_raw = getpass.getpass()
 print("Introduzca la contraseña de nuevo para verificar")
@@ -144,11 +129,3 @@ with open(fichero_output,"w") as output_fd:
         except:
             None
             
-'''with open(dir+".csv", 'w', newline='') as myfile:
-    wr = csv.writer(myfile, quoting=csv.QUOTE_ALL)
-    for i in paths:
-        wr.writerow(i + ", " + hashlib.sha512(i.encode('utf-8')).hexdigest())'''
-
-    return "Hasheo de archivos finalizado"
-
-genfile("hids_test.csv", paths, "test")

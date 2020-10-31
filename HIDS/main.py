@@ -8,6 +8,7 @@ import stat
 import sys
 from getpass import getpass
 from tkinter import messagebox
+import datetime
 
 '''
 param: ruta a archivo cvs con las columnas ruta,hash
@@ -146,7 +147,7 @@ def main():
                 msg = "===# FICHERO NO ENCONTRADO! #===\n" \
                         "Ruta: " + ruta
                 print(msg)
-                logging.error("Fallo en:(" + ruta + ") El fichero no se encuntra")
+                logging.error("Fallo en:(" + ruta + ") El fichero no se encuntra.  Fecha:(" + datetime.datetime.now() + ")")
                 ficheros_no_encontrados = ficheros_no_encontrados + 1
                 continue
 	
@@ -159,7 +160,7 @@ def main():
                         "Hash actual:\t" + new_hash 
                 print(msg)
                 #_ = messagebox.showerror("ARCHIVO CORRUPTO!", msg)
-                logging.error("Fallo en:(" + ruta + ") Hash original:(" + hash + ") Actual:(" + new_hash + ")")
+                logging.error("Fallo en:(" + ruta + ") Hash original:(" + hash + ") Actual:(" + new_hash + ") Fecha:(" + datetime.datetime.now() + ")")
                 ficheros_corruptos = ficheros_corruptos + 1
             
     
