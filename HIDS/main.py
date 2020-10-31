@@ -130,6 +130,7 @@ def main():
             exit(-1)
         
     logging.info("Arrancando monitor")
+    
 
     #Bucle principal, ejecutar cada x tiempo
     while True:
@@ -137,6 +138,7 @@ def main():
         
         ficheros_corruptos = 0
         ficheros_no_encontrados = 0
+        
         ficheros_total = len(hashes)
         
         for ruta,hash in hashes:
@@ -169,13 +171,18 @@ def main():
         #Estadisticas
         porcentaje_corruptos = float(ficheros_corruptos/ficheros_total)*100
         porcentaje_no_encontrados = float(ficheros_no_encontrados/ficheros_total)*100
-             
+        
+        if porcentaje_corruptos > 10 or porcentaje_no_encontrados > 10:
+            ataque = True
+        
+
         logging.info("Estadisticas: corruptos: " + str(porcentaje_corruptos) \
                     + "% no encontrados: " + str(porcentaje_no_encontrados) + "%")     
         
         print("FICHEROS: " + str(ficheros_total))
         print("CORRUPTOS: " + str(ficheros_corruptos) + " " + str(porcentaje_corruptos)+"%")
         print("NO ENCONTRADOS: " + str(ficheros_no_encontrados) + " " + str(porcentaje_no_encontrados)+"%")
+        print("VICTIMA DE ATAQUE:" + str(ataque))
         print(" -- ")
         
         time.sleep(intervalo)
