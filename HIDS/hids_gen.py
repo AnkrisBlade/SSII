@@ -4,6 +4,7 @@ import os
 import csv
 import sys
 import getpass
+import configparser
 
 
 # Returns list with all files inside that path
@@ -20,15 +21,25 @@ import getpass
 
 #dir = os.path.dirname(paths[0]).split("\\")[-1]'''
 
+def get_config_file():
+    defaults_paths = ["/etc/hids/config.ini","./config.ini","./hids.ini","./hids.conf"]
+    
+    for path in defaults_paths:
+        #comprobamos que existe
+        if os.path.isfile(path):
+            return path
+        
+    return None
+
 def print_usage():
     print("HIDS Generador Database")
-    print("Uso: " + sys.argv[0] + " hash_tipo input output")
+    print("Uso: " + sys.argv[0] + " input output")
 
-if len(sys.argv) < 4:
+if len(sys.argv) < 3:
     print_usage()
     exit(-1)
 
-metodo_integridad = sys.argv[1]
+"""metodo_integridad = sys.argv[1]
 hash_func = hashlib.sha1
 
 if metodo_integridad == "sha1":
@@ -38,10 +49,30 @@ elif metodo_integridad == "sha256":
 elif metodo_integridad == "sha512":
     hash_func = hashlib.sha512
 elif metodo_integridad == "md5":
-    hash_func = hashlib.md5
+    hash_func = hashlib.md5"""
 
-fichero_input = sys.argv[2]
-fichero_output = sys.argv[3]
+config = configparser.ConfigParser()
+config_path = get_config_file()
+if config_path == None:
+    print("No se encontró ningún archivo de configuracion")
+else:
+    config.read(config_path)
+try:    
+    metodo_integridad = config.get("General","metodo_integridad")
+    if metodo_integridad == "sha1":
+        hash_func = hashlib.sha1
+    elif metodo_integridad == "sha256":
+        hash_func = hashlib.sha256
+    elif metodo_integridad == "sha512":
+        hash_func = hashlib.sha512
+    elif metodo_integridad == "md5":
+        hash_func = hashlib.md5
+        
+except Exception as e:
+    print("No se ha definido un metodo de comprobacion de integridad, usando sha1")
+
+fichero_input = sys.argv[1]
+fichero_output = sys.argv[2]
 
 ficheros_procesar = []
 
