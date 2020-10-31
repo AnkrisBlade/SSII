@@ -96,6 +96,38 @@ with open(fichero_input,"r") as input_fd:
         
         add_ruta(ruta.replace("\n",""))
 
+
+# Almacenamos las rutas de los archivos dentro de los directorios especificados en un fichero "archivo_path"
+
+"""
+def filepaths(archivo_path):
+    with open(archivo_path) as csv_file:
+        path = csv.reader(csv_file)
+        paths = []
+        for i in path:
+            try:
+                for subdir, _, files in os.walk(i[0]):
+                    for file in files:
+                        paths.append(os.path.join(subdir, file))
+
+            except Exception as ex:
+                print(ex)
+        return paths
+
+def genfile(name, paths, password):
+    with open(name, 'w', newline='') as csv_file:
+        hasheo = csv.writer(csv_file, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
+        for i in paths:
+            file_hash = hashlib.sha1(open(i).read().encode()).hexdigest()
+            hasheo.writerow([i, " " + hashlib.sha1((file_hash + password).encode()).hexdigest()])
+
+paths = filepaths(r"D:\Fork\SSII\HIDS\Password_Generator.csv")
+genfile("hids_test.csv", paths, "test")
+
+"""
+
+
+
 print("Introduzca la contraseña de administador para generar los hashes")
 pass_raw = getpass.getpass()
 print("Introduzca la contraseña de nuevo para verificar")
