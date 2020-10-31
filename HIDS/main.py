@@ -5,6 +5,7 @@ import os
 import logging
 import configparser
 import stat
+import sys
 from getpass import getpass
 from tkinter import messagebox
 
@@ -103,6 +104,7 @@ def main():
         
         print("Introduzca la contraseña de administrador:")
     
+        #comprobamos que la contraseña introducida es la correcta
         contra_raw = getpass()
         pass_hash = hashlib.sha1(contra_raw.encode()).hexdigest()
         
@@ -111,7 +113,7 @@ def main():
             exit(-1)
             
     except FileNotFoundError as e:
-        print(e)
+        #esto significa que no hay ninguna contraseña guardada
         print("No existe una contraseña almacena o no se puede acceder a ella")
         contra_raw = getpass("Por favor inserte una contraseña:")
         contra_hash = hashlib.sha1(contra_raw.encode()).hexdigest()
@@ -119,6 +121,8 @@ def main():
         try:
             with open(".shadow","x") as pass_fd:
                 pass_fd.write(contra_hash)
+                
+            os.chmod(".shadow",0o400)
         except Exception as e:
             print(e)
             print("Fallo al crear la contraseña")
@@ -137,7 +141,7 @@ def main():
         for ruta,hash in hashes:
             
             try:
-                file_hash = hash_func(open(ruta).read().encode()).hexdigest()
+                file_hash = hash_func(open(ruta,"rb").read()).hexdigest()
             except FileNotFoundError as e:
                 msg = "===# FICHERO NO ENCONTRADO! #===\n" \
                         "Ruta: " + ruta
@@ -150,8 +154,8 @@ def main():
             if new_hash != hash:
                 msg = "===# FICHERO CORRUPTO! #===\n" + \
                         "Ruta: " + ruta + "\n" \
-                        "SHA1 Original:\t" + hash + "\n" \
-                        "SHA1 Actual:\t" + new_hash 
+                        "Hash original:\t" + hash + "\n" \
+                        "Hash actual:\t" + new_hash 
                 print(msg)
                 #_ = messagebox.showerror("ARCHIVO CORRUPTO!", msg)
                 logging.error("Fallo en:(" + ruta + ") Hash original:(" + hash + ") Actual:(" + new_hash + ")")
