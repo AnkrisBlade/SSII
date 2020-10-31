@@ -106,7 +106,7 @@ def main():
     
         #comprobamos que la contraseña introducida es la correcta
         contra_raw = getpass()
-        pass_hash = hashlib.sha1(contra_raw.encode()).hexdigest()
+        pass_hash = hashlib.sha512(contra_raw.encode()).hexdigest()
         
         if contra_hash != pass_hash:
             print("Contraseña erronea")
@@ -116,7 +116,7 @@ def main():
         #esto significa que no hay ninguna contraseña guardada
         print("No existe una contraseña almacena o no se puede acceder a ella")
         contra_raw = getpass("Por favor inserte una contraseña:")
-        contra_hash = hashlib.sha1(contra_raw.encode()).hexdigest()
+        contra_hash = hashlib.sha512(contra_raw.encode()).hexdigest()
         
         try:
             with open(".shadow","x") as pass_fd:
@@ -150,6 +150,7 @@ def main():
                 ficheros_no_encontrados = ficheros_no_encontrados + 1
                 continue
 	
+            #fichero leido
             new_hash = hash_func((file_hash + contra_raw).encode()).hexdigest()
             if new_hash != hash:
                 msg = "===# FICHERO CORRUPTO! #===\n" + \
@@ -161,8 +162,10 @@ def main():
                 logging.error("Fallo en:(" + ruta + ") Hash original:(" + hash + ") Actual:(" + new_hash + ")")
                 ficheros_corruptos = ficheros_corruptos + 1
             
+    
         logging.info("Integridad comprobada")
         
+        #Estadisticas
         porcentaje_corruptos = float(ficheros_corruptos/ficheros_total)*100
         porcentaje_no_encontrados = float(ficheros_no_encontrados/ficheros_total)*100
              
