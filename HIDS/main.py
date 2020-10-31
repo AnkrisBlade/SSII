@@ -35,6 +35,7 @@ def main():
     log_path = "hids.log"
     db_path = "hids.csv"
     hash_func = hashlib.sha1
+    intervalo_informe = 86400 #24 horas
 
     #leer la configuracion si la hubiera
     config = configparser.ConfigParser()
@@ -130,14 +131,16 @@ def main():
             exit(-1)
         
     logging.info("Arrancando monitor")
-    
 
     #Bucle principal, ejecutar cada x tiempo
+        
     while True:
         print("Comprobando Integridad")
         
         ficheros_corruptos = 0
         ficheros_no_encontrados = 0
+
+        ataque = False
         
         ficheros_total = len(hashes)
         
@@ -149,10 +152,10 @@ def main():
                 msg = "===# FICHERO NO ENCONTRADO! #===\n" \
                         "Ruta: " + ruta
                 print(msg)
-                logging.error("Fallo en:(" + ruta + ") El fichero no se encuntra.  Fecha:(" + datetime.datetime.now() + ")")
-                ficheros_no_encontrados = ficheros_no_encontrados + 1
+                logging.error("Fallo en:(" + ruta + ") El fichero no se encuntra.  Fecha:(" + str(datetime.datetime.now()) + ")")
+                ficheros_no_encontrados += 1
                 continue
-	
+    
             #fichero leido
             new_hash = hash_func((file_hash + contra_raw).encode()).hexdigest()
             if new_hash != hash:
@@ -162,9 +165,8 @@ def main():
                         "Hash actual:\t" + new_hash 
                 print(msg)
                 #_ = messagebox.showerror("ARCHIVO CORRUPTO!", msg)
-                logging.error("Fallo en:(" + ruta + ") Hash original:(" + hash + ") Actual:(" + new_hash + ") Fecha:(" + datetime.datetime.now() + ")")
-                ficheros_corruptos = ficheros_corruptos + 1
-            
+                logging.error("Fallo en:(" + ruta + ") Hash original:(" + hash + ") Actual:(" + new_hash + ") Fecha:(" + str(datetime.datetime.now()) + ")")
+                ficheros_corruptos += 1
     
         logging.info("Integridad comprobada")
         
@@ -175,7 +177,6 @@ def main():
         if porcentaje_corruptos > 10 or porcentaje_no_encontrados > 10:
             ataque = True
         
-
         logging.info("Estadisticas: corruptos: " + str(porcentaje_corruptos) \
                     + "% no encontrados: " + str(porcentaje_no_encontrados) + "%")     
         
@@ -186,5 +187,5 @@ def main():
         print(" -- ")
         
         time.sleep(intervalo)
-        
+            
 main()
