@@ -4,7 +4,8 @@ import time
 import os
 import logging
 import configparser
-import os.path
+import stat
+import sys
 from getpass import getpass
 from tkinter import messagebox
 
@@ -22,6 +23,7 @@ def get_config_file():
     defaults_paths = ["/etc/hids/config.ini","./config.ini","./hids.ini","./hids.conf"]
     
     for path in defaults_paths:
+        #comprobamos que existe
         if os.path.isfile(path):
             return path
         
@@ -33,37 +35,42 @@ def main():
     db_path = "hids.csv"
     hash_func = hashlib.sha1
 
+    #leer la configuracion si la hubiera
     config = configparser.ConfigParser()
-    if get_config_file == None:
+    config_path = get_config_file()
+    if config_path == None:
         print("No se encontró ningún archivo de configuracion")
-        
-    config.read("hids.ini")
+    else:
+        config.read(config_path)
     
     try:
         intervalo = int(config.get("General","intervalo"))
     except Exception as e:
+        print("No se obtuvo un intervalo de comprobacion valido, usando valor por defecto ("+intervalo+"s)")
         print(e)
         
     try:
         log_path = config.get("General","log")
     except Exception as e:
+        print("No se obtuvo una ruta valida para el log, usando por defecto (" + log_path + ")")
         print(e)
         
     try:    
         db_path = config.get("General","database")
     except Exception as e:
+        print("No se obtuvo una ruta valida para la base de datos, usando por defecto (" + db_path + ")")
         print(e)
         
     try:    
         metodo_integridad = config.get("General","metodo_integridad")
         if metodo_integridad == "sha1":
             hash_func = hashlib.sha1
+        elif metodo_integridad == "sha256":
+            hash_func = hashlib.sha256
         elif metodo_integridad == "sha512":
             hash_func = hashlib.sha512
         elif metodo_integridad == "md5":
             hash_func = hashlib.md5
-        elif metodo_integridad == "sha256":
-            hash_func = hashlib.sha256
             
     except Exception as e:
         print("No se ha definido un metodo de comprobacion de integridad, usando sha1")        
@@ -72,30 +79,50 @@ def main():
     log_format = "[%(levelname)s] %(asctime)s : %(message)s"
     logging.basicConfig(level=logging.DEBUG,filename=log_path,format = log_format)
     
+    #cargar base de datos
     hashes = read_database(db_path)
+    
+    if len(hashes) == 0 :
+        print("Base de datos vacia!!")
+        exit(0)
+        
    
+    #leemos la contraseña
     contra_raw = ""
     try:
         with open(".shadow","r") as pass_fd:
             contra_hash = pass_fd.read()
-            
+        
+        #comprobamos los permisos
+        perms = os.stat(".shadow").st_mode
+        
+        if perms & stat.S_IRWXO > 0 or perms & stat.S_IRWXG > 0 or perms & stat.S_IWUSR > 0:
+            print("El shadow de la contraseña tiene permisos " + \
+                str(oct(perms))[-3:] + "! considere cambiarlos a 400")
+            logging.warning("El shadow de la contraseña tiene permisos " + \
+                str(oct(perms))[-3:] + "! considere cambiarlos a 400")
+        
         print("Introduzca la contraseña de administrador:")
     
+        #comprobamos que la contraseña introducida es la correcta
         contra_raw = getpass()
-        pass_hash = hashlib.sha1(contra_raw.encode()).hexdigest()
+        pass_hash = hashlib.sha512(contra_raw.encode()).hexdigest()
         
         if contra_hash != pass_hash:
             print("Contraseña erronea")
             exit(-1)
             
-    except:
+    except FileNotFoundError as e:
+        #esto significa que no hay ninguna contraseña guardada
         print("No existe una contraseña almacena o no se puede acceder a ella")
         contra_raw = getpass("Por favor inserte una contraseña:")
-        contra_hash = hashlib.sha1(contra_raw.encode()).hexdigest()
+        contra_hash = hashlib.sha512(contra_raw.encode()).hexdigest()
         
         try:
             with open(".shadow","x") as pass_fd:
                 pass_fd.write(contra_hash)
+                
+            os.chmod(".shadow",0o400)
         except Exception as e:
             print(e)
             print("Fallo al crear la contraseña")
@@ -114,7 +141,7 @@ def main():
         for ruta,hash in hashes:
             
             try:
-                file_hash = hash_func(open(ruta).read().encode()).hexdigest()
+                file_hash = hash_func(open(ruta,"rb").read()).hexdigest()
             except FileNotFoundError as e:
                 msg = "===# FICHERO NO ENCONTRADO! #===\n" \
                         "Ruta: " + ruta
@@ -123,19 +150,22 @@ def main():
                 ficheros_no_encontrados = ficheros_no_encontrados + 1
                 continue
 	
+            #fichero leido
             new_hash = hash_func((file_hash + contra_raw).encode()).hexdigest()
             if new_hash != hash:
                 msg = "===# FICHERO CORRUPTO! #===\n" + \
                         "Ruta: " + ruta + "\n" \
-                        "SHA1 Original:\t" + hash + "\n" \
-                        "SHA1 Actual:\t" + new_hash 
+                        "Hash original:\t" + hash + "\n" \
+                        "Hash actual:\t" + new_hash 
                 print(msg)
                 #_ = messagebox.showerror("ARCHIVO CORRUPTO!", msg)
                 logging.error("Fallo en:(" + ruta + ") Hash original:(" + hash + ") Actual:(" + new_hash + ")")
                 ficheros_corruptos = ficheros_corruptos + 1
             
+    
         logging.info("Integridad comprobada")
         
+        #Estadisticas
         porcentaje_corruptos = float(ficheros_corruptos/ficheros_total)*100
         porcentaje_no_encontrados = float(ficheros_no_encontrados/ficheros_total)*100
              
