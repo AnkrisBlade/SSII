@@ -5,14 +5,15 @@ from googleapiclient.discovery import build
 from google_auth_oauthlib.flow import InstalledAppFlow
 from google.auth.transport.requests import Request
 from googleapiclient import errors
+from email.mime.multipart import MIMEMultipart, MIMEBase
 from email.mime.text import MIMEText
+import mimetypes
 import base64
-import configparser
 
 
 SCOPES = ['https://www.googleapis.com/auth/gmail.send']
 
-screds = None
+creds = None
 # The file token.pickle stores the user's access and refresh tokens, and is
 # created automatically when the authorization flow completes for the first
 # time.
@@ -24,21 +25,14 @@ if not creds or not creds.valid:
     if creds and creds.expired and creds.refresh_token:
         creds.refresh(Request())
     else:
-        flow = InstalledAppFlow.from_client_secrets_file(
-            'credentials.json', SCOPES)
+        flow = InstalledAppFlow.from_client_secrets_file('HIDS/credentials.json', SCOPES)
         creds = flow.run_local_server(port=0)
     # Save the credentials for the next run
     with open('token.pickle', 'wb') as token:
         pickle.dump(creds, token)
 service = build('gmail', 'v1', credentials=creds)
 
-config = configparser.ConfigParser()
-
-config.read("hids.ini")
-
-#email = config.get("Email","email")
-
-def create_message(to):
+def create_message(to,subject,file):
     """Create a message for an email.
       Args:
           sender: Email address of the sender.
@@ -48,11 +42,34 @@ def create_message(to):
       Returns:
           An object containing a base64url encoded email object.
     """
-    msg = MIMEText("It's a test")
-    msg['From'] = 'ssii.gr2@gmail.com'
-    msg['To'] = to
-    msg['Subject'] = 'Report diary'
-    return {'raw': base64.urlsafe_b64encode(msg.as_bytes()).decode()}
+
+    message = MIMEMultipart()
+    message['to'] = to
+    message['from'] = 'ssii.gr2@gmail.com'
+    message['subject'] = subject
+    
+    content_type, encoding = mimetypes.guess_type(file)
+
+    if content_type is None or encoding is not None:
+        content_type = 'application/octet-stream'
+    
+    main_type, sub_type = content_type.split('/', 1)
+    
+    if main_type == 'text':
+        fp = open(file, 'r')
+        msg = MIMEText(fp.read(), _subtype=sub_type)
+        fp.close()
+    else:
+        fp = open(file, 'rb')
+        msg = MIMEBase(main_type, sub_type)
+        msg.set_payload(fp.read())
+        fp.close()
+
+    filename = os.path.basename(file)
+    msg.add_header('Content-Disposition', 'attachment', filename=filename)
+    message.attach(msg)
+    
+    return {'raw': base64.urlsafe_b64encode(message.as_bytes()).decode(encoding='utf-8')}
 
 
 def send_message(service, user_id, message):
@@ -67,8 +84,6 @@ def send_message(service, user_id, message):
     """
     try:
         message = (service.users().messages().send(userId=user_id, body=message).execute())
-    except:
-        print('An error occurred error')
+    except Exception as e:
+        print(e)
 
-raw_text = create_message('example@gmail.com')
-send_message(service, 'me', raw_text)
