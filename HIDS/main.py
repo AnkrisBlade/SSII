@@ -207,14 +207,14 @@ def main():
         print(" -- ")
         
         analisis += 1
+        if(time.strftime("%H:%M")) == hora_inicio:
+            gen_informe(analisis,n_ataques,log_path)
+            #Reiniciamos las variables utilizadas para las estadisticas del informe
+            analisis = 0
+            n_ataques = 0
+            #Generamos un nuevo log
+            logging.basicConfig(level=logging.DEBUG,filename=log_path,format = log_format,filemode='w')
 
-            if(time.strftime("%H:%M")) == hora_inicio:
-                gen_informe(analisis,n_ataques,log_path)
-                #Reiniciamos las variables utilizadas para las estadisticas del informe
-                analisis = 0
-                n_ataques = 0
-                #Generamos un nuevo log
-                logging.basicConfig(level=logging.DEBUG,filename=log_path,format = log_format,filemode='w')
         time.sleep(intervalo)
             
 main()

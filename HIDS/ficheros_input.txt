@@ -1,1 +1,2 @@
-/bin
+D:\Fork\SSII\Password_Generator
+D:\Fork\SSII\.vscode
