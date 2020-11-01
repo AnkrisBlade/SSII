@@ -1,14 +1,9 @@
 import csv
 import hashlib
 import time
-import os
 import logging
-import configparser
-import stat
-import sys
-from getpass import getpass
 import datetime
-from hids_gen import filepaths, genfile, copy_csv
+from hids_gen import configuration
 
 '''
 param: ruta a archivo cvs con las columnas ruta,hash
@@ -22,115 +17,18 @@ def read_database(path):
     return hashes
 
 
-def get_config_file():
-    defaults_paths = ["/etc/hids/config.ini", "./config.ini", "hids.ini", "./hids.conf"]
-
-    for path in defaults_paths:
-        # comprobamos que existe
-        if os.path.isfile(path):
-            return path
-
-    return None
-
-
-def gen_informe(n_analisis, ataque,log):
-    with open("informe_"+str(datetime.datetime.now().strftime("%m-%d-%Y %H-%M-%S"))+".txt", "w") as f:
-        f.write("INFORME DIARIO "+str(datetime.datetime.now().today())+"\n")
-        f.write("NUMERO DE ANÁLISIS: " + str(n_analisis)+"\n")
-        f.write("NUMERO DE ATAQUES RECIBIDOS: " + str(ataque)+"\n")
+def gen_informe(n_analisis, ataque, log):
+    with open("informe_"
+              + str(datetime.datetime.now().strftime("%m-%d-%Y %H-%M-%S")) + ".txt", "w", encoding="UTF-8") as f:
+        f.write("INFORME DIARIO " + str(datetime.datetime.now().today()) + "\n")
+        f.write("NUMERO DE ANÁLISIS: " + str(n_analisis) + "\n")
+        f.write("VICTIMA DE ATAQUE: " + str(ataque) + "\n")
         f.write("\n")
-        with open(log,'r') as l:
+        with open(log, 'r') as l:
             for linea in l:
-                    f.write(linea)
+                f.write(linea)
             l.close()
         f.close()
-
-
-def configuration():
-    config = configparser.ConfigParser()
-    config_path = get_config_file()
-
-    # leer la configuracion si la hubiera
-    if config_path:
-        config.read(config_path)
-    else:
-        return "No se encontró ningún archivo de configuracion"
-
-    intervalo = 3600
-    try:
-        intervalo = int(config.get("General", "intervalo"))
-    except Exception as e:
-        print("No se obtuvo un intervalo de comprobacion valido, usando valor por defecto (" + str(intervalo) + "s)")
-        print(e)
-
-    log_path = "hids.log"
-    try:
-        log_path = config.get("General", "log")
-    except Exception as e:
-        print("No se obtuvo una ruta valida para el log, usando por defecto (" + log_path + ")")
-        print(e)
-
-    db_path = "hids.csv"
-    try:
-        db_path = config.get("General", "database")
-    except Exception as e:
-        print("No se obtuvo una ruta valida para la base de datos, usando por defecto (" + db_path + ")")
-        print(e)
-
-    db = filepaths(db_path)
-
-    metodo_integridad = "sha1"
-    try:
-        metodo_integridad = config.get("General", "metodo_integridad")
-
-    except:
-        print("No se ha definido un metodo de comprobacion de integridad, usando sha1")
-
-    # Leemos la contraseña
-    try:
-        with open(".shadow", "r") as pass_fd:
-            contra_hash = pass_fd.read()
-
-        # comprobamos los permisos
-        perms = os.stat(".shadow").st_mode
-
-        if perms & stat.S_IRWXO > 0 or perms & stat.S_IRWXG > 0 or perms & stat.S_IWUSR > 0:
-            print("El shadow de la contraseña tiene permisos " + \
-                  str(oct(perms))[-3:] + "! considere cambiarlos a 400")
-            print("El shadow de la contraseña tiene permisos " + \
-                            str(oct(perms))[-3:] + "! considere cambiarlos a 400")
-
-        print("Introduzca la contraseña de administrador:")
-
-        # comprobamos que la contraseña introducida es la correcta
-        contra_raw = getpass()
-        pass_hash = hashlib.sha512(contra_raw.encode()).hexdigest()
-
-        if contra_hash != pass_hash:
-            print("Contraseña erronea")
-
-    except FileNotFoundError:
-
-        # esto significa que no hay ninguna contraseña guardada
-        print("No existe una contraseña almacena o no se puede acceder a ella")
-        contra_raw = getpass("Por favor inserte una contraseña:")
-        contra_hash = hashlib.sha512(contra_raw.encode()).hexdigest()
-
-        try:
-            with open(".shadow", "x") as pass_fd:
-                pass_fd.write(contra_hash)
-
-            os.chmod(".shadow", 0o400)
-        except Exception as e:
-            print(e)
-            return "Fallo al crear la contraseña"
-
-    try:
-        genfile("hids.csv", db, contra_raw, metodo_integridad)
-    except:
-        print("Error al crear el fichero con los archivos y hashes")
-
-    return [intervalo, log_path, "hids.csv", metodo_integridad, contra_raw]
 
 
 def main():
@@ -164,14 +62,11 @@ def main():
     log_format = "[%(levelname)s] %(asctime)s : %(message)s"
     logging.basicConfig(level=logging.DEBUG, filename=config[1], format=log_format)
 
-    # Inicialicamos el logging
-    logging.info("Arrancando monitor")
-
-    #Variables para el informe
+    # Variables para el informe
     analisis = 0
-
     hora_inicio = time.strftime("%H:%m")
-    # Bucle principal, ejecutar cada x tiempo
+
+    # Bucle principal, ejecutar cada "intervalo" tiempo
     while True:
         print("Comprobando Integridad")
 
@@ -227,13 +122,14 @@ def main():
 
         analisis += 1
 
-        if (time.strftime("%H:%M")) == hora_inicio:
+        if (time.strftime("%H:%M")) >= hora_inicio:
             gen_informe(analisis, ataque, config[1])
             # Reiniciamos las variables utilizadas para las estadisticas del informe
             analisis = 0
-            
             # Generamos un nuevo log
             logging.basicConfig(level=logging.DEBUG, filename=config[1], format=log_format, filemode='w')
+
         time.sleep(config[0])
+
 
 main()
