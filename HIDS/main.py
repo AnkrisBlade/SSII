@@ -34,7 +34,7 @@ def get_config_file():
 
 def gen_informe(n_analisis, n_ataques,log):
     with open("informe_"+str(datetime.datetime.now())+".txt", "w") as f:
-        f.write("INFORME DIARIO "+str(datetime.date.now().today())+"\n")
+        f.write("INFORME DIARIO "+str(datetime.datetime.now().today())+"\n")
         f.write("NUMERO DE ANÁLISIS: " + str(n_analisis)+"\n")
         f.write("NUMERO DE ATAQUES RECIBIDOS: " + str(n_ataques)+"\n")
         f.write("\n")
@@ -208,13 +208,13 @@ def main():
         
         analisis += 1
 
-            if(time.strftime("%H:%M")) == hora_inicio:
-                gen_informe(analisis,n_ataques,log_path)
-                #Reiniciamos las variables utilizadas para las estadisticas del informe
-                analisis = 0
-                n_ataques = 0
-                #Generamos un nuevo log
-                logging.basicConfig(level=logging.DEBUG,filename=log_path,format = log_format,filemode='w')
+        if(time.strftime("%H:%M")) == '17:43':
+            gen_informe(analisis,n_ataques,log_path)
+            #Reiniciamos las variables utilizadas para las estadisticas del informe
+            analisis = 0
+            n_ataques = 0
+            #Generamos un nuevo log
+            logging.basicConfig(level=logging.DEBUG,filename=log_path,format = log_format,filemode='w')
         time.sleep(intervalo)
             
 main()
