@@ -3,7 +3,7 @@ import hashlib
 import time
 import logging
 import datetime
-from hids_gen import configuration
+from hids_config import configuration
 
 '''
 param: ruta a archivo cvs con las columnas ruta,hash
