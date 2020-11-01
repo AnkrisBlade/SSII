@@ -9,6 +9,8 @@ import sys
 from getpass import getpass
 from tkinter import messagebox
 import datetime
+from importlib import reload
+
 
 '''
 param: ruta a archivo cvs con las columnas ruta,hash
@@ -30,12 +32,23 @@ def get_config_file():
         
     return None
 
+def gen_informe(n_analisis, n_ataques,log):
+    with open("informe_"+str(datetime.datetime.now())+".txt", "w") as f:
+        f.write("INFORME DIARIO "+str(datetime.date.now().today())+"\n")
+        f.write("NUMERO DE ANÁLISIS: " + str(n_analisis)+"\n")
+        f.write("NUMERO DE ATAQUES RECIBIDOS: " + str(n_ataques)+"\n")
+        f.write("\n")
+        with open(log,'r') as l:
+            for linea in l:
+                    f.write(linea)
+            f.close()
+        f.close()
+
 def main():
     intervalo = 3600
     log_path = "hids.log"
     db_path = "hids.csv"
     hash_func = hashlib.sha1
-    intervalo_informe = 86400 #24 horas
 
     #leer la configuracion si la hubiera
     config = configparser.ConfigParser()
@@ -80,6 +93,7 @@ def main():
     #inicializar log
     log_format = "[%(levelname)s] %(asctime)s : %(message)s"
     logging.basicConfig(level=logging.DEBUG,filename=log_path,format = log_format)
+    
     
     #cargar base de datos
     hashes = read_database(db_path)
@@ -132,8 +146,13 @@ def main():
         
     logging.info("Arrancando monitor")
 
+    #Variables para el informe
+    analisis = 0
+    n_ataques = 0
+
+    hora_inicio = time.strftime("%H:%m")
+
     #Bucle principal, ejecutar cada x tiempo
-        
     while True:
         print("Comprobando Integridad")
         
@@ -176,6 +195,7 @@ def main():
         
         if porcentaje_corruptos > 10 or porcentaje_no_encontrados > 10:
             ataque = True
+            n_ataques +=1
         
         logging.info("Estadisticas: corruptos: " + str(porcentaje_corruptos) \
                     + "% no encontrados: " + str(porcentaje_no_encontrados) + "%")     
@@ -186,6 +206,15 @@ def main():
         print("VICTIMA DE ATAQUE:" + str(ataque))
         print(" -- ")
         
+        analisis += 1
+
+            if(time.strftime("%H:%M")) == hora_inicio:
+                gen_informe(analisis,n_ataques,log_path)
+                #Reiniciamos las variables utilizadas para las estadisticas del informe
+                analisis = 0
+                n_ataques = 0
+                #Generamos un nuevo log
+                logging.basicConfig(level=logging.DEBUG,filename=log_path,format = log_format,filemode='w')
         time.sleep(intervalo)
             
 main()
