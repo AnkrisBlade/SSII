@@ -19,6 +19,7 @@ def filepaths(archivo_path):
 
             except Exception as ex:
                 print(ex)
+        csv_file.close()
         return paths
 
 
@@ -38,6 +39,8 @@ def genfile(name, paths, password, metodo_integridad):
             file_hash = hash_func(open(i, "rb").read()).hexdigest()
             hasheo.writerow([i, hash_func((file_hash + password).encode()).hexdigest()])
 
+        csv_file.close()
+
 
 def get_config_file():
     defaults_paths = ["/etc/hids/config.ini", "./config.ini", "hids.ini", "./hids.ini", "./hids.conf"]
@@ -46,8 +49,6 @@ def get_config_file():
         # comprobamos que existe
         if os.path.isfile(path):
             return path
-
-    return None
 
 
 def configuration():
@@ -131,7 +132,8 @@ def configuration():
 
     try:
         genfile("hids.csv", db, contra_raw, metodo_integridad)
-    except:
+    except Exception as ex:
+        print(ex)
         print("Error al crear el fichero con los archivos y hashes")
 
     return [intervalo, log_path, "hids.csv", metodo_integridad, contra_raw]

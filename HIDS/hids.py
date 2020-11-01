@@ -122,12 +122,12 @@ def main():
 
         analisis += 1
 
-        if (time.strftime("%H:%M")) >= hora_inicio:
+        if (time.strftime("%H:%M")) == hora_inicio:
             gen_informe(analisis, ataque, config[1])
             # Reiniciamos las variables utilizadas para las estadisticas del informe
             analisis = 0
             # Generamos un nuevo log
-            logging.basicConfig(level=logging.DEBUG, filename=config[1], format=log_format, filemode='w')
+            open(config[1], "w").close()
 
         time.sleep(config[0])
 
