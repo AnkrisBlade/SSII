@@ -33,11 +33,11 @@ def get_config_file():
     return None
 
 
-def gen_informe(n_analisis, n_ataques,log):
+def gen_informe(n_analisis, ataque,log):
     with open("informe_"+str(datetime.datetime.now().strftime("%m-%d-%Y %H-%M-%S"))+".txt", "w") as f:
         f.write("INFORME DIARIO "+str(datetime.datetime.now().today())+"\n")
         f.write("NUMERO DE ANÁLISIS: " + str(n_analisis)+"\n")
-        f.write("NUMERO DE ATAQUES RECIBIDOS: " + str(n_ataques)+"\n")
+        f.write("NUMERO DE ATAQUES RECIBIDOS: " + str(ataque)+"\n")
         f.write("\n")
         with open(log,'r') as l:
             for linea in l:
@@ -169,13 +169,13 @@ def main():
 
     #Variables para el informe
     analisis = 0
-    n_ataques = 0
 
     hora_inicio = time.strftime("%H:%m")
     # Bucle principal, ejecutar cada x tiempo
     while True:
         print("Comprobando Integridad")
 
+        ataque = False
         ficheros_corruptos = 0
         ficheros_no_encontrados = 0
         ficheros_total = len(hashes)
@@ -213,7 +213,6 @@ def main():
         porcentaje_corruptos = float(ficheros_corruptos / ficheros_total) * 100
         porcentaje_no_encontrados = float(ficheros_no_encontrados / ficheros_total) * 100
 
-        ataque = False
         if porcentaje_corruptos > 10 or porcentaje_no_encontrados > 10:
             ataque = True
 
@@ -229,10 +228,12 @@ def main():
         analisis += 1
 
         if (time.strftime("%H:%M")) == hora_inicio:
-            gen_informe(analisis, n_ataques, config[1])
+            gen_informe(analisis, ataque, config[1])
             # Reiniciamos las variables utilizadas para las estadisticas del informe
             analisis = 0
-            n_ataques = 0
+            
             # Generamos un nuevo log
             logging.basicConfig(level=logging.DEBUG, filename=config[1], format=log_format, filemode='w')
         time.sleep(config[0])
+
+main()
