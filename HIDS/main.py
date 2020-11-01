@@ -208,7 +208,7 @@ def main():
         
         analisis += 1
 
-        if(time.strftime("%H:%M")) == '17:43':
+        if(time.strftime("%H:%M")) == hora_inicio:
             gen_informe(analisis,n_ataques,log_path)
             #Reiniciamos las variables utilizadas para las estadisticas del informe
             analisis = 0
