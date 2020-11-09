@@ -1,6 +1,8 @@
 import java.io.*;
 import java.net.*;
 import javax.net.*;
+import java.nio.*;
+import java.util.Random;
 
 public class IntegrityVerifierServer {
 
@@ -16,7 +18,7 @@ public class IntegrityVerifierServer {
 	}
 
 	// ejecuciÃ³n del servidor para escuchar peticiones de los clientes
-	private void runServer() {
+	private void runServer(String[] args) {
 		while (true) {
 			// espera las peticiones del cliente para comprobar mensaje/MAC
 			try {
@@ -30,13 +32,28 @@ public class IntegrityVerifierServer {
 						socket.getOutputStream()));
 				// se lee del cliente el mensaje y el macdelMensajeEnviado
 				
-				//OBTENEMOS LA CLAVE
-				byte clave[] = {12,34,56,78,90,12,34,56}; //32 bits
+				//OBTENEMOS LA CLAVE ; EN EL SERVIDOR LA OBTENEMOS DEL FICHERO SEÑALADO EN EL PRIMERO ARGUMENTO
+				String claveStr = "";
+                try{  
+                    BufferedReader br=new BufferedReader(new FileReader(args[0]));    
+                    String linea;
+                    while((linea=br.readLine()) != null){
+                        claveStr += linea;
+                    };
+                    br.close();    
+                }catch (Exception ex) {
+                    ex.printStackTrace();  
+                }                 
+            
+                byte[] clave = claveStr.getBytes();
 				
 				
-				//ENVIAMOS EL NONCE
-				String nonce = "vosnososvenezuela";
+				//GENERAR EL NONCE DE FORMA ALEATORIA
+				Random rand = new Random();
+				byte[] nonce_byte = ByteBuffer.allocate(8).putLong(rand.nextLong()).array();
+                String nonce = MAC.byteArrayToHexString(nonce_byte);
 				
+				//ENVIAR EL NONCE
 				output.println(nonce);
 				output.println(MAC.performMACTest(nonce,clave));
 				output.flush();
@@ -48,9 +65,9 @@ public class IntegrityVerifierServer {
 				String macdelMensajeCalculado = MAC.performMACTest(mensaje+nonce,clave);
 				System.err.println(mensaje);
 				if (macdelMensajeEnviado.equals(macdelMensajeCalculado)) {
-					output.println("Mensaje enviado integro ");
+					output.println("ACK");
 				} else {
-					output.println("Mensaje enviado no integro.");
+					output.println("NACK");
 				}
 				
 				output.close();
@@ -65,6 +82,6 @@ public class IntegrityVerifierServer {
 	// ejecucion del servidor
 	public static void main(String args[]) throws Exception {
 		IntegrityVerifierServer server = new IntegrityVerifierServer();
-		server.runServer();
+		server.runServer(args);
 	}
 }

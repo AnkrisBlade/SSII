@@ -4,7 +4,7 @@ all:
 	
 server:
 	javac IntegrityVerifierServer.java
-	java IntegrityVerifierServer
+	java IntegrityVerifierServer pass
 	
 client:
 	javac IntegrityVerifierClient.java

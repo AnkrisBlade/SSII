@@ -75,7 +75,7 @@ def main():
         ficheros_no_encontrados = 0
         ficheros_total = len(hashes)
 
-        for ruta, hash in hashes:
+        for ruta,hash in hashes:
 
             try:
                 file_hash = hash_func(open(ruta, "rb").read()).hexdigest()

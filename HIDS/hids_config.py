@@ -81,9 +81,7 @@ def configuration():
     except Exception as e:
         print("No se obtuvo una ruta valida para la base de datos, usando por defecto (" + db_path + ")")
         print(e)
-
-    db = filepaths(db_path)
-
+    
     metodo_integridad = "sha1"
     try:
         metodo_integridad = config.get("General", "metodo_integridad")
