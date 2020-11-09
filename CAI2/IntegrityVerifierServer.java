@@ -25,6 +25,9 @@ public class IntegrityVerifierServer {
 	// ejecuciÃ³n del servidor para escuchar peticiones de los clientes
 	private void runServer(String[] args) {
         FileHandler fd_log;
+        Integer mensajes_integros = 0;
+        Integer mensajes_totales = 0;
+        
         
         try {
             fd_log = new FileHandler("./cai2.log");  
@@ -35,7 +38,7 @@ public class IntegrityVerifierServer {
             e.printStackTrace();  
         } catch (IOException e) {  
             e.printStackTrace();  
-        }  
+        }
 	
 	
 		while (true) {
@@ -86,10 +89,15 @@ public class IntegrityVerifierServer {
 				if (macdelMensajeEnviado.equals(macdelMensajeCalculado)) {
                     LOGGER.info("Mensaje ("+mensaje+") recibido correctamente");
 					output.println("ACK");
+					mensajes_integros++;
 				} else {
                     LOGGER.warning("Mensaje ("+mensaje+") no autenificado!");
 					output.println("NACK");
 				}
+				
+				mensajes_totales++;
+                LOGGER.info("Estadisticas:"+mensajes_totales+" mensajes totales, de los cuales "+mensajes_integros+" sin fallos\n" +
+                                "Ratio: "+ ((float) (mensajes_integros))*100f/((float) mensajes_totales) + "% de éxito");
 				
 				output.close();
 				input.close();
