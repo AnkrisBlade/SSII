@@ -2,11 +2,16 @@ import java.io.*;
 import java.net.*;
 import javax.net.*;
 import java.nio.*;
-import java.util.Random;
+import java.util.*;
+import java.util.logging.FileHandler;
+import java.util.logging.Logger;
+import java.util.logging.Level;
+import java.util.logging.SimpleFormatter;
 
 public class IntegrityVerifierServer {
 
 	private ServerSocket serverSocket;
+	private final static Logger LOGGER = Logger.getLogger(IntegrityVerifierServer.class.getName());
 
 	// Constructor
 	public IntegrityVerifierServer() throws Exception {
@@ -19,6 +24,20 @@ public class IntegrityVerifierServer {
 
 	// ejecuciÃ³n del servidor para escuchar peticiones de los clientes
 	private void runServer(String[] args) {
+        FileHandler fd_log;
+        
+        try {
+            fd_log = new FileHandler("./cai2.log");  
+            LOGGER.addHandler(fd_log);
+            SimpleFormatter formatter = new SimpleFormatter();  
+            fd_log.setFormatter(formatter);
+        } catch (SecurityException e) {  
+            e.printStackTrace();  
+        } catch (IOException e) {  
+            e.printStackTrace();  
+        }  
+	
+	
 		while (true) {
 			// espera las peticiones del cliente para comprobar mensaje/MAC
 			try {
@@ -65,8 +84,10 @@ public class IntegrityVerifierServer {
 				String macdelMensajeCalculado = MAC.performMACTest(mensaje+nonce,clave);
 				System.err.println(mensaje);
 				if (macdelMensajeEnviado.equals(macdelMensajeCalculado)) {
+                    LOGGER.info("Mensaje ("+mensaje+") recibido correctamente");
 					output.println("ACK");
 				} else {
+                    LOGGER.warning("Mensaje ("+mensaje+") no autenificado!");
 					output.println("NACK");
 				}
 				
