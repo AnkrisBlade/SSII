@@ -7,7 +7,8 @@ import java.util.logging.Logger;
 import java.util.logging.SimpleFormatter;
 
 public class BYODServer{
-
+	private final static String USER_CORRECT = "pepito";
+	private final static String PASSWD_CORRECT = "H89rtaW_16K";
 	private SSLServerSocket serverSocket;
 	private final static Logger LOGGER = Logger.getLogger(BYODServer.class.getName());
 
@@ -53,21 +54,15 @@ public class BYODServer{
 				// se lee del cliente el mensaje y el macdelMensajeEnviado
 				
 				
-				String mensaje = input.readLine();
+				String user = input.readLine();
+				String passwd = input.readLine();
 				
-				// a continuaciÃ³n habrÃ­a que verificar el MAC
-				String macdelMensajeEnviado = input.readLine();
-				// a continuaci�n habr�a que verificar el MAC
-				String macdelMensajeCalculado = "";
-				System.err.println(mensaje);
-				if (macdelMensajeEnviado.equals(macdelMensajeCalculado)) {
-					output.println("Mensaje enviado integro ");
-				} else {
-					output.println("Mensaje enviado no integro.");
+				if(user.equals(USER_CORRECT) && passwd.equals(PASSWD_CORRECT)){
+					output.println("Login correcto");
+				}else{
+					output.println("Login incorrecto");
 				}
-				mensajes_totales++;
-                LOGGER.info("Estadisticas:"+mensajes_totales+" mensajes totales, de los cuales "+mensajes_integros+" sin fallos\n" +
-                                "Ratio: "+ ((float) (mensajes_integros))*100f/((float) mensajes_totales) + "% de éxito");
+				//System.err.println(mensaje);
 				
 				output.close();
 				input.close();

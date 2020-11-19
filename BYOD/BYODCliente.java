@@ -3,7 +3,6 @@ import java.io.*;
 import javax.net.ssl.*;
 import javax.swing.*;
 
-
 public class BYODCliente {
 
 	public BYODCliente() {
@@ -24,11 +23,11 @@ public class BYODCliente {
 					socket.getInputStream()));
 				
 			//OBTENER CLAVE ; EN EL CLIENTE LA PEDIMOS GRAFICAMENTE
-			JFileChooser jq = new JFileChooser(".");
- 			int op = jq.showOpenDialog(null);
- 			
- 			String claveStr = "";
- 			if( op == JFileChooser.APPROVE_OPTION ){    
+			String user = JOptionPane.showInputDialog(null, "Introduzca su usario");
+			output.println(user);
+			String passwd = JOptionPane.showInputDialog(null,"Introduzca su clave:");
+			output.println(passwd);
+ 			/*if(  ){    
                 File fd = jq.getSelectedFile();    
                 try{  
                     BufferedReader br=new BufferedReader(new FileReader(fd));    
@@ -43,28 +42,19 @@ public class BYODCliente {
             }else{
                 System.err.println("Debe introducir la contraseña!");
                 System.exit(-1);
-            }
+            }*/
         
-			byte[] clave = claveStr.getBytes();
+			//byte[] clave = claveStr.getBytes();
 			
 			//OBTENER MENSAJE
-			String mensaje = JOptionPane.showInputDialog(null,
-					"Introduzca su mensaje:");
+			String mensaje = JOptionPane.showInputDialog(null,"Introduzca su mensaje:");
 	
 			output.println(mensaje);
 			
 			output.flush();
-			
-			String res = input.readLine();
-			if(res.equals("ACK")){
-                JOptionPane.showMessageDialog(null, "Transacción completada con éxito",
-                        "Éxito",JOptionPane.INFORMATION_MESSAGE);
-			}else{
-                System.err.println("Fallo de integridad");
-				JOptionPane.showMessageDialog(null, "No se puedo establecer la sesión (Fallo al autentificar el mensaje)",
-                        "Fallo de autentificación", JOptionPane.ERROR_MESSAGE);
-				System.exit(-1);
-			}
+	
+			String respuesta = input.readLine();
+			JOptionPane.showMessageDialog(null,respuesta);
 			
 			output.close();
 			input.close();
