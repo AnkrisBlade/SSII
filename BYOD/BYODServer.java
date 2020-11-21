@@ -17,8 +17,17 @@ public class BYODServer{
 		// ServerSocketFactory para construir los ServerSockets
 		SSLServerSocketFactory socketFactory = (SSLServerSocketFactory) SSLServerSocketFactory
 				.getDefault();
+        
 		// creaciÃ³n de un objeto ServerSocket (se establece el puerto)
 		serverSocket = (SSLServerSocket) socketFactory.createServerSocket(7070);
+        
+        String[] enCiphersuite = serverSocket.getEnabledCipherSuites();
+        
+        for (String c : enCiphersuite)
+            System.out.println("Enabled ciphersuites are: "+c);
+            
+        String pickedCipher[] ={"TLS_RSA_WITH_AES_256_CBC_SHA384"}; 
+        serverSocket.setEnabledCipherSuites(pickedCipher);
 	}
 
 	// ejecuciÃ³n del servidor para escuchar peticiones de los clientes
