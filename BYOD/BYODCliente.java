@@ -22,37 +22,20 @@ public class BYODCliente {
 			BufferedReader input = new BufferedReader(new InputStreamReader(
 					socket.getInputStream()));
 				
-			//OBTENER CLAVE ; EN EL CLIENTE LA PEDIMOS GRAFICAMENTE
+			//OBTENEMOS USUARIO
 			String user = JOptionPane.showInputDialog(null, "Introduzca su usario");
 			output.println(user);
+			//OBTENEMOS CONTRASEÑA
 			String passwd = JOptionPane.showInputDialog(null,"Introduzca su clave:");
 			output.println(passwd);
- 			/*if(  ){    
-                File fd = jq.getSelectedFile();    
-                try{  
-                    BufferedReader br=new BufferedReader(new FileReader(fd));    
-                    String linea;
-                    while((linea=br.readLine()) != null){
-                        claveStr += linea;
-                    };
-                    br.close();    
-                }catch (Exception ex) {
-                    ex.printStackTrace();  
-                }                 
-            }else{
-                System.err.println("Debe introducir la contraseña!");
-                System.exit(-1);
-            }*/
-        
-			//byte[] clave = claveStr.getBytes();
-			
+ 			
 			//OBTENER MENSAJE
 			String mensaje = JOptionPane.showInputDialog(null,"Introduzca su mensaje:");
 	
 			output.println(mensaje);
 			
 			output.flush();
-	
+			//Imprimimos la respuesta del servidor
 			String respuesta = input.readLine();
 			JOptionPane.showMessageDialog(null,respuesta);
 			
