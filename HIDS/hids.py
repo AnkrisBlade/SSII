@@ -75,7 +75,7 @@ def main():
         ficheros_no_encontrados = 0
         ficheros_total = len(hashes)
 
-        for ruta,hash in hashes:
+        for ruta, hash in hashes:
 
             try:
                 file_hash = hash_func(open(ruta, "rb").read()).hexdigest()
@@ -122,6 +122,7 @@ def main():
 
         analisis += 1
 
+        # Si la hora es igual a la de inicio, genera informe (24h)
         if (time.strftime("%H:%M")) == hora_inicio:
             gen_informe(analisis, ataque, config[1])
             # Reiniciamos las variables utilizadas para las estadisticas del informe
